@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+<title>Registro de Viabilidade TEER Mitral (MitraClip / Pascal)</title>
+<style>
+  :root{
+    --bg:#0b1020; /* dark blue for high contrast on tablets */
+    --card:#121a33;
+    --muted:#7f8ab3;
+    --text:#e9edff;
+    --good:#2ecc71;
+    --warn:#f1c40f;
+    --bad:#e74c3c;
+    --accent:#7aa2ff;
+    --border:rgba(255,255,255,.08);
+  }
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+  *{box-sizing:border-box}
+  .wrap{max-width:1100px;margin:0 auto;padding:16px 16px 120px}
+  header{position:sticky;top:0;z-index:10;background:linear-gradient(180deg, rgba(11,16,32,0.95), rgba(11,16,32,0.75));backdrop-filter: blur(6px);}
+  .toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;padding:12px 8px;border-bottom:1px solid var(--border)}
+  h1{font-size:20px;line-height:1.2;margin:0;font-weight:700}
+  .btn{appearance:none;border:1px solid var(--border);background:var(--card);color:var(--text);padding:10px 14px;border-radius:12px;font-weight:600;cursor:pointer}
+  .btn:active{transform:scale(.98)}
+  .btn.primary{background:var(--accent);border-color:transparent;color:#0a0f20}
+  .grid{display:grid;gap:12px}
+  @media(min-width:720px){.grid.cols-2{grid-template-columns:1fr 1fr}.grid.cols-3{grid-template-columns:repeat(3,1fr)}}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:12px}
+  .card h2{margin:0 0 8px;font-size:16px}
+  .row{display:grid;grid-template-columns:140px 1fr;gap:10px;align-items:center;padding:8px 0;border-top:1px dashed var(--border)}
+  .row:first-child{border-top:0}
+  label{font-size:13px;color:var(--muted)}
+  input,select,textarea{width:100%;padding:12px 12px;border-radius:12px;border:1px solid var(--border);background:#0e1530;color:var(--text);font-size:16px}
+  input[type="number"]{appearance:textfield}
+  .pill{display:inline-flex;gap:6px;background:#0e1530;border:1px solid var(--border);padding:6px;border-radius:999px}
+  .chip{border:1px solid var(--border);padding:8px 10px;border-radius:999px;background:#0e1530;font-weight:700;cursor:pointer}
+  .chip[data-v="ideal"]{color:var(--good)}
+  .chip[data-v="desafiador"]{color:var(--warn)}
+  .chip[data-v="desaconselhavel"]{color:var(--bad)}
+  .chip.active{background:rgba(255,255,255,0.06)}
+  .help{font-size:12px;color:var(--muted)}
+  .inline{display:flex;gap:8px;flex-wrap:wrap}
+  .twocol{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+  .score{font-size:13px;color:var(--muted)}
+  .score b{color:var(--text)}
+  .bad{color:var(--bad)}.warn{color:var(--warn)}.good{color:var(--good)}
+  .section-note{font-size:12px;color:var(--muted);margin-top:6px}
+  .sticky-bottom{position:fixed;bottom:0;left:0;right:0;background:linear-gradient(0deg, rgba(11,16,32,1), rgba(11,16,32,0.85));border-top:1px solid var(--border);padding:10px 12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+  .overall{font-weight:800}
+  .kbd{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;background:#0c1330;border:1px solid var(--border);padding:2px 6px;border-radius:6px}
+  .tag{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--border);padding:4px 8px;border-radius:999px;font-size:12px;background:#0e1530;color:var(--muted)}
+  .tag i{width:8px;height:8px;border-radius:50%}
+  .tag .g{background:var(--good)}.tag .y{background:var(--warn)}.tag .r{background:var(--bad)}
+  .hr{height:1px;background:var(--border);margin:6px 0}
+</style>
+
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0b1020">
+<link rel="icon" href="icons/icon-192.png" sizes="192x192">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<script>
+// Registrar Service Worker para uso offline
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('service-worker.js');
+  });
+}
+</script>
+
+</head>
+<body>
+  <header>
+    <div class="toolbar wrap">
+      
+<h1>
+  <img src="https://fmsegat.github.io/logo-cardiodiagnostico.png"
+       alt="Cardiodiagnóstico" style="height:32px;vertical-align:middle;margin-right:8px;">
+  Registro de Viabilidade TEER Mitral
+</h1>
+
+      <div class="inline">
+        <button class="btn" onclick="exportarJSON()">Exportar JSON</button>
+        <button class="btn" onclick="copiarResumo()">Copiar resumo</button>
+        <button class="btn" onclick="window.print()">Imprimir</button>
+        <button class="btn primary" onclick="avaliarGeral()">Avaliar Viabilidade</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap grid cols-2">
+
+    <!-- Identificação -->
+    <section class="card">
+      <h2>Identificação</h2>
+      <div class="row"><label>Paciente</label><input id="paciente" placeholder="Nome"/></div>
+      <div class="row"><label>Data</label><input id="data" type="date"/></div>
+      <div class="row"><label>Operador</label><input id="operador" placeholder="Ex.: Fabiano Segat"/></div>
+      <div class="row"><label>Ritmo</label>
+        <select id="ritmo"><option value="">—</option><option>Sinusal</option><option>FA</option><option>Outro</option></select>
+      </div>
+    </section>
+
+    <!-- Etiologia e mecanismo -->
+    <section class="card">
+      <h2>Etiologia e Mecanismo</h2>
+      <div class="row"><label>Etiologia</label>
+        <select id="etiologia"><option value="">—</option><option>Degenerativa (primária)</option><option>Funcional (secundária)</option><option>Mista</option></select>
+      </div>
+      <div class="row"><label>Classificação de Carpentier</label>
+        <select id="carpentier"><option value="">—</option><option>Tipo I (anulodilat., perfuração)</option><option>Tipo II (prolapso/flail)</option><option>Tipo IIIa (restrição sisto/diastólica)</option><option>Tipo IIIb (restrição sistólica/tethering)</option></select>
+      </div>
+      <div class="row"><label>Jets</label>
+        <div class="twocol">
+          <input id="seg" placeholder="Segmento(s) ex.: A2-P2 ou A1-P1"/>
+          <select id="multijets"><option value="">Número de jets</option><option>1</option><option>2 adjacentes</option><option>≥2 não adjacentes</option></select>
+        </div>
+      </div>
+      <div class="row"><label>Severidade da RM</label>
+        <div class="twocol">
+          <input id="eroa" type="number" step="0.01" placeholder="EROA (cm²)"/>
+          <input id="rvol" type="number" step="1" placeholder="RVol (mL)"/>
+        </div>
+      </div>
+      <div class="row"><label>Vena contracta / 3D</label><input id="vc" placeholder="Largura ou área (mm / cm²)"/></div>
+      <div class="row"><label>Veias pulmonares</label><select id="pv"><option value="">—</option><option>Sistólica reversa</option><option>Sistólica diminuída</option><option>Normal</option></select></div>
+    </section>
+
+    <!-- Folhetos / coaptação -->
+    <section class="card">
+      <h2>Folhetos & Coaptação</h2>
+      <div class="row"><label>Comprimento folheto (A2/P2)</label>
+        <div class="twocol">
+          <input id="lenA" type="number" step="0.1" placeholder="A2 (mm)"/>
+          <input id="lenP" type="number" step="0.1" placeholder="P2 (mm)"/>
+        </div>
+      </div>
+      <div class="row"><label>Coaptação</label>
+        <div class="twocol">
+          <input id="cl" type="number" step="0.1" placeholder="Comprimento (mm)"/>
+          <input id="cd" type="number" step="0.1" placeholder="Profundidade (mm)"/>
+        </div>
+      </div>
+      <div class="row"><label>Flail / Prolapso</label>
+        <div class="twocol">
+          <input id="flailgap" type="number" step="0.1" placeholder="Gap (mm)"/>
+          <input id="flailwidth" type="number" step="0.1" placeholder="Largura (mm)"/>
+        </div>
+      </div>
+      <div class="row"><label>Calcificação na zona de apreensão</label>
+        <select id="calc"><option value="">—</option><option>Nenhuma</option><option>Focal leve</option><option>Importante/linear</option></select>
+      </div>
+      <div class="row"><label>Clefts/Comissuras</label>
+        <select id="cleft"><option value="">—</option><option>Ausentes</option><option>Cleft adjacente à zona</option><option>Comissural</option></select>
+      </div>
+      <div class="section-note">Dicas: alvo ideal normalmente A2–P2; evitar calcificação/cleft exatamente no local de captura.</div>
+    </section>
+
+    <!-- Área/Gradiente/Anel -->
+    <section class="card">
+      <h2>Área, Gradiente & Anel</h2>
+      <div class="row"><label>Área valvar mitral</label>
+        <div class="twocol">
+          <input id="mva" type="number" step="0.1" placeholder="Planimetria 3D (cm²)"/>
+          <input id="grad" type="number" step="0.1" placeholder="Gradiente médio (mmHg)"/>
+        </div>
+      </div>
+      <div class="row"><label>FC do gradiente</label><input id="hr" type="number" step="1" placeholder="bpm"/></div>
+      <div class="row"><label>Stress (opcional)</label>
+        <div class="twocol">
+          <input id="gradStress" type="number" step="0.1" placeholder="Grad. médio sob stress (mmHg)"/>
+          <input id="hrStress" type="number" step="1" placeholder="FC sob stress (bpm)"/>
+        </div>
+      </div>
+      <div class="row"><label>Dimensões do anel</label>
+        <div class="twocol">
+          <input id="ap" type="number" step="0.1" placeholder="Ântero-posterior (mm)"/>
+          <input id="ml" type="number" step="0.1" placeholder="Médio-lateral (mm)"/>
+        </div>
+      </div>
+      <div class="row"><label>MAC</label><select id="mac"><option value="">—</option><option>Ausente/leve</option><option>Moderado</option><option>Extenso/severo</option></select></div>
+    </section>
+
+    <!-- Câmaras e hemodinâmica -->
+    <section class="card">
+      <h2>Função Cardíaca & Hemodinâmica</h2>
+      <div class="row"><label>VE</label>
+        <div class="twocol">
+          <input id="lvef" type="number" step="1" placeholder="FEVE (%)"/>
+          <input id="lvvol" placeholder="Vol. (ED/ES) mL ou indexados"/>
+        </div>
+      </div>
+      <div class="row"><label>Átrio esquerdo</label><input id="lai" type="number" step="1" placeholder="LAVI (mL/m²)"/></div>
+      <div class="row"><label>VD/RV</label>
+        <div class="twocol">
+          <input id="tapse" type="number" step="0.1" placeholder="TAPSE (mm)"/>
+          <input id="sPASP" type="number" step="1" placeholder="PSAP (mmHg)"/>
+        </div>
+      </div>
+      <div class="row"><label>TR</label><select id="tr"><option value="">—</option><option>Trivial/leve</option><option>Moderada</option><option>Importante</option></select></div>
+    </section>
+
+    <!-- Segurança / contraindicações eco -->
+    <section class="card">
+      <h2>Segurança (eco)</h2>
+      <div class="row"><label>TE transesofágico</label><select id="tee"><option value="">—</option><option>Viável</option><option>Contraindicado relativo</option><option>Contraindicado</option></select></div>
+      <div class="row"><label>TEP/LA/LAA trombo</label><select id="thrombus"><option value="">—</option><option>Ausente</option><option>Suspeito</option><option>Presente</option></select></div>
+      <div class="row"><label>Endocardite ativa</label><select id="endo"><option value="">—</option><option>Não</option><option>Sim</option></select></div>
+      <div class="row"><label>Anel/Próteses prévias</label><input id="prior" placeholder="Anel cirúrgico, clip prévio, etc."/></div>
+    </section>
+
+    <!-- Classificações por item -->
+    <section class="card">
+      <h2>Classificação por critério (toque para marcar)</h2>
+      <div class="row"><label>Zona alvo (A2–P2, jet central)</label>
+        <div class="pill" data-key="zona">
+          <span class="chip" data-v="ideal">Ideal</span>
+          <span class="chip" data-v="desafiador">Desafiador</span>
+          <span class="chip" data-v="desaconselhavel">Desaconselhável</span>
+        </div>
+      </div>
+      <div class="row"><label>Comprimento de folha útil (≥10 mm)</label>
+        <div class="pill" data-key="len">
+          <span class="chip" data-v="ideal">Ideal</span>
+          <span class="chip" data-v="desafiador">Desafiador</span>
+          <span class="chip" data-v="desaconselhavel">Desaconselhável</span>
+        </div>
+      </div>
+      <div class="row"><label>Coaptação (CL ≥2 mm; CD ≤11 mm)</label>
+        <div class="pill" data-key="coapt">
+          <span class="chip" data-v="ideal">Ideal</span>
+          <span class="chip" data-v="desafiador">Desafiador</span>
+          <span class="chip" data-v="desaconselhavel">Desaconselhável</span>
+        </div>
+      </div>
+      <div class="row"><label>Flail (gap ≤10 mm; largura ≤15 mm)</label>
+        <div class="pill" data-key="flail">
+          <span class="chip" data-v="ideal">Ideal</span>
+          <span class="chip" data-v="desafiador">Desafiador</span>
+          <span class="chip" data-v="desaconselhavel">Desaconselhável</span>
+        </div>
+      </div>
+      <div class="row"><label>Calcificação/cleft na zona</label>
+        <div class="pill" data-key="calc">
+          <span class="chip" data-v="ideal">Ideal</span>
+          <span class="chip" data-v="desafiador">Desafiador</span>
+          <span class="chip" data-v="desaconselhavel">Desaconselhável</span>
+        </div>
+      </div>
+      <div class="row"><label>MVA e Gradiente (MVA ≥4 cm²; MG &lt;5 mmHg)</label>
+        <div class="pill" data-key="mva">
+          <span class="chip" data-v="ideal">Ideal</span>
+          <span class="chip" data-v="desafiador">Desafiador</span>
+          <span class="chip" data-v="desaconselhavel">Desaconselhável</span>
+        </div>
+      </div>
+      <div class="row"><label>Jets múltiplos/segmentos comissurais</label>
+        <div class="pill" data-key="jets">
+          <span class="chip" data-v="ideal">Ideal</span>
+          <span class="chip" data-v="desafiador">Desafiador</span>
+          <span class="chip" data-v="desaconselhavel">Desaconselhável</span>
+        </div>
+      </div>
+      <div class="row"><label>MAC/Anatomia complexa</label>
+        <div class="pill" data-key="mac">
+          <span class="chip" data-v="ideal">Ideal</span>
+          <span class="chip" data-v="desafiador">Desafiador</span>
+          <span class="chip" data-v="desaconselhavel">Desaconselhável</span>
+        </div>
+      </div>
+      <div class="row"><label>PSAP/RV (risco de descomp.)</label>
+        <div class="pill" data-key="pasp">
+          <span class="chip" data-v="ideal">Ideal</span>
+          <span class="chip" data-v="desafiador">Desafiador</span>
+          <span class="chip" data-v="desaconselhavel">Desaconselhável</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Observações e plano -->
+    <section class="card">
+      <h2>Resumo & Plano</h2>
+      <div class="row"><label>Resumo textual</label><textarea id="resumo" rows="6" placeholder="Descreva os principais achados e a estratégia (ex.: 1–2 clipes, alvo A2–P2, cuidado com gradiente, etc.)"></textarea></div>
+      <div class="row"><label>Dispositivo/estratégia</label>
+        <div class="twocol">
+          <select id="device"><option value="">—</option><option>MitraClip (NT/NTR/XTR/G4)</option><option>PASCAL / Ace</option><option>Indefinido</option></select>
+          <input id="clips" type="number" step="1" placeholder="# implantes previstos"/>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <div class="sticky-bottom wrap">
+    <div class="inline">
+      <span class="tag"><i class="g"></i>Ideal</span>
+      <span class="tag"><i class="y"></i>Desafiador</span>
+      <span class="tag"><i class="r"></i>Desaconselhável</span>
+      <span class="score" id="scoreTxt"></span>
+    </div>
+    <div class="overall" id="overall">—</div>
+  </div>
+
+<script>
+// Toque para ativar chips
+for (const pill of document.querySelectorAll('.pill')){
+  pill.addEventListener('click', (e)=>{
+    if(!e.target.classList.contains('chip')) return;
+    for(const c of pill.querySelectorAll('.chip')) c.classList.remove('active');
+    e.target.classList.add('active');
+    avaliarGeral();
+  });
+}
+
+function lerChips(){
+  const map={};
+  document.querySelectorAll('.pill').forEach(p=>{
+    const key=p.dataset.key;
+    const active=p.querySelector('.chip.active');
+    map[key]=active?active.dataset.v:'';
+  });
+  return map;
+}
+
+function autoClassFromNumbers(){
+  // Regras mínimas baseadas em thresholds de literatura
+  const mva=val('mva');
+  const grad=val('grad');
+  const cl=val('cl');
+  const cd=val('cd');
+  const lenA=val('lenA');
+  const lenP=val('lenP');
+  const flgap=val('flailgap');
+  const flw=val('flailwidth');
+  const calc=document.getElementById('calc').value;
+  const jets=document.getElementById('multijets').value;
+
+  // MVA/Grad
+  if(mva){
+    setChip('mva', (mva>=4 && (!grad || grad<5)) ? 'ideal' : (mva>=3.5 && (!grad || grad<=7) ? 'desafiador' : 'desaconselhavel'));
+  } else if(grad){
+    setChip('mva', grad<5 ? 'ideal' : (grad<=7?'desafiador':'desaconselhavel'));
+  }
+  // Coaptação
+  if(cl||cd){
+    const ok = (cl>=2) && (cd>0 && cd<=11);
+    const borderline = (cl>=1 && cl<2) || (cd>11 && cd<=13);
+    setChip('coapt', ok?'ideal':(borderline?'desafiador':'desaconselhavel'))
+  }
+  // Comprimento folheto útil (usar o menor)
+  if(lenA||lenP){
+    const minLen = Math.min(lenA||1e9, lenP||1e9);
+    if(minLen<1e9){
+      setChip('len', minLen>=10?'ideal':(minLen>=7?'desafiador':'desaconselhavel'))
+    }
+  }
+  // Flail
+  if(flgap||flw){
+    const bad = (flgap>15)||(flw>20);
+    const borderline = (!bad) && (flgap>10 || flw>15);
+    setChip('flail', bad?'desaconselhavel':(borderline?'desafiador':'ideal'))
+  }
+  // Calcificação/cleft
+  if(calc){
+    setChip('calc', calc==='Nenhuma'?'ideal':(calc==='Focal leve'?'desafiador':'desaconselhavel'))
+  }
+  // Jets comissurais/múltiplos
+  if(jets){
+    setChip('jets', jets==='1'?'ideal':(jets.includes('adjacentes')?'desafiador':'desaconselhavel'))
+  }
+}
+
+function setChip(key, val){
+  const p=document.querySelector(`.pill[data-key="${key}"]`);
+  if(!p) return;
+  for(const c of p.querySelectorAll('.chip')){
+    c.classList.toggle('active', c.dataset.v===val);
+  }
+}
+
+function val(id){
+  const v=document.getElementById(id)?.value;
+  return v?Number(v):null;
+}
+
+function avaliarGeral(){
+  autoClassFromNumbers();
+  const chips=lerChips();
+  let ideal=0, desafiador=0, ruim=0, total=0;
+  for(const k in chips){
+    if(!chips[k]) continue; total++;
+    if(chips[k]==='ideal') ideal++;
+    if(chips[k]==='desafiador') desafiador++;
+    if(chips[k]==='desaconselhavel') ruim++;
+  }
+  const scoreTxt=document.getElementById('scoreTxt');
+  scoreTxt.innerHTML = `<b>${ideal}</b> ideal · <b class="warn">${desafiador}</b> desafiador · <b class="bad">${ruim}</b> desacons.`;
+  const overall=document.getElementById('overall');
+  let out='Classifique critérios';
+  if(total){
+    if(ruim>=1){ out='Desaconselhável (rever estratégia/alternativas)'; overall.style.color='var(--bad)'; }
+    else if(desafiador>=2){ out='Desafiador (planejar com equipe experiente)'; overall.style.color='var(--warn)'; }
+    else { out='Caso ideal para TEER'; overall.style.color='var(--good)'; }
+  }
+  overall.textContent=out;
+}
+
+function exportarJSON(){
+  avaliarGeral();
+  const data={
+    paciente: g('paciente'), data: g('data'), operador: g('operador'), ritmo: g('ritmo'),
+    etiologia: g('etiologia'), carpentier: g('carpentier'), segmentos: g('seg'), multijets:g('multijets'),
+    eroA: g('eroa'), rvol:g('rvol'), vc:g('vc'), veiasPulm: g('pv'),
+    lenA:g('lenA'), lenP:g('lenP'), cl:g('cl'), cd:g('cd'), flailgap:g('flailgap'), flailwidth:g('flailwidth'), calc:g('calc'), cleft:g('cleft'),
+    mva:g('mva'), grad:g('grad'), hr:g('hr'), gradStress:g('gradStress'), hrStress:g('hrStress'), ap:g('ap'), ml:g('ml'), mac:g('mac'),
+    lvef:g('lvef'), lvvol:g('lvvol'), lai:g('lai'), tapse:g('tapse'), psap:g('sPASP'), tr:g('tr'),
+    tee:g('tee'), trombo:g('thrombus'), endocardite:g('endo'), previo:g('prior'),
+    classificacoes: lerChips(), dispositivo:g('device'), nImplantes:g('clips'), resumo:g('resumo'), overall: document.getElementById('overall').textContent
+  };
+  const blob=new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download=`TEER_${(g('paciente')||'paciente').replace(/\s+/g,'_')}.json`; a.click();
+  URL.revokeObjectURL(url);
+}
+
+function copiarResumo(){
+  avaliarGeral();
+  const txt=`TEER Mitral — ${g('paciente')||'Paciente'}\n`
+  + `Etiologia: ${g('etiologia')||'-'} | Carpentier: ${g('carpentier')||'-'} | Jets: ${g('seg')||'-'} (${g('multijets')||'-'})\n`
+  + `Severidade: EROA ${g('eroa')||'-'} cm², RVol ${g('rvol')||'-'} mL, VC/3D ${g('vc')||'-'}\n`
+  + `Folhetos: A2 ${g('lenA')||'-'} mm, P2 ${g('lenP')||'-'} mm | Coaptação: CL ${g('cl')||'-'} mm, CD ${g('cd')||'-'} mm | Flail Gap ${g('flailgap')||'-'} mm (Larg ${g('flailwidth')||'-'} mm)\n`
+  + `Anel/MV: MVA ${g('mva')||'-'} cm², Grad ${g('grad')||'-'} mmHg @FC ${g('hr')||'-'} | MAC: ${g('mac')||'-'}\n`
+  + `Hemodinâmica: FEVE ${g('lvef')||'-'}%, LAVI ${g('lai')||'-'} mL/m², TAPSE ${g('tapse')||'-'} mm, PSAP ${g('sPASP')||'-'} mmHg, TR ${g('tr')||'-'}\n`
+  + `Segurança: TEE ${g('tee')||'-'}, Trombo ${g('thrombus')||'-'}, Endocardite ${g('endo')||'-'}\n`
+  + `Classificação (por critério): ${JSON.stringify(lerChips())}\n`
+  + `Estratégia: ${g('device')||'-'} | Implantes previstos: ${g('clips')||'-'}\n`
+  + `Resumo: ${g('resumo')||'-'}\n`
+  + `Conclusão: ${document.getElementById('overall').textContent}`;
+  navigator.clipboard.writeText(txt).then(()=>{
+    toast('Resumo copiado');
+  })
+}
+
+function g(id){ return document.getElementById(id)?.value || '' }
+
+function toast(msg){
+  const t=document.createElement('div');
+  t.textContent=msg; t.style.position='fixed'; t.style.bottom='80px'; t.style.left='50%'; t.style.transform='translateX(-50%)'; t.style.background='var(--card)'; t.style.border='1px solid var(--border)'; t.style.padding='10px 14px'; t.style.borderRadius='12px'; t.style.boxShadow='0 10px 30px rgba(0,0,0,.4)'; t.style.zIndex=99; document.body.appendChild(t);
+  setTimeout(()=>t.remove(),1500);
+}
+
+// Prefill date
+document.getElementById('data').value = new Date().toISOString().slice(0,10);
+</script>
+</body>
+</html>
