@@ -4,9 +4,13 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
 <title>Registro de Viabilidade TEER Mitral (MitraClip / Pascal)</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0b1020">
+<link rel="icon" href="icons/icon-192.png" sizes="192x192">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
 <style>
   :root{
-    --bg:#0b1020; /* dark blue for high contrast on tablets */
+    --bg:#0b1020;
     --card:#121a33;
     --muted:#7f8ab3;
     --text:#e9edff;
@@ -21,7 +25,8 @@
   .wrap{max-width:1100px;margin:0 auto;padding:16px 16px 120px}
   header{position:sticky;top:0;z-index:10;background:linear-gradient(180deg, rgba(11,16,32,0.95), rgba(11,16,32,0.75));backdrop-filter: blur(6px);}
   .toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;padding:12px 8px;border-bottom:1px solid var(--border)}
-  h1{font-size:20px;line-height:1.2;margin:0;font-weight:700}
+  h1{font-size:20px;line-height:1.2;margin:0;font-weight:700;display:flex;align-items:center;gap:8px}
+  h1 img{height:32px;vertical-align:middle;margin-right:2px}
   .btn{appearance:none;border:1px solid var(--border);background:var(--card);color:var(--text);padding:10px 14px;border-radius:12px;font-weight:600;cursor:pointer}
   .btn:active{transform:scale(.98)}
   .btn.primary{background:var(--accent);border-color:transparent;color:#0a0f20}
@@ -40,7 +45,6 @@
   .chip[data-v="desafiador"]{color:var(--warn)}
   .chip[data-v="desaconselhavel"]{color:var(--bad)}
   .chip.active{background:rgba(255,255,255,0.06)}
-  .help{font-size:12px;color:var(--muted)}
   .inline{display:flex;gap:8px;flex-wrap:wrap}
   .twocol{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
   .score{font-size:13px;color:var(--muted)}
@@ -49,37 +53,59 @@
   .section-note{font-size:12px;color:var(--muted);margin-top:6px}
   .sticky-bottom{position:fixed;bottom:0;left:0;right:0;background:linear-gradient(0deg, rgba(11,16,32,1), rgba(11,16,32,0.85));border-top:1px solid var(--border);padding:10px 12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between}
   .overall{font-weight:800}
-  .kbd{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;background:#0c1330;border:1px solid var(--border);padding:2px 6px;border-radius:6px}
   .tag{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--border);padding:4px 8px;border-radius:999px;font-size:12px;background:#0e1530;color:var(--muted)}
   .tag i{width:8px;height:8px;border-radius:50%}
   .tag .g{background:var(--good)}.tag .y{background:var(--warn)}.tag .r{background:var(--bad)}
   .hr{height:1px;background:var(--border);margin:6px 0}
-</style>
 
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#0b1020">
-<link rel="icon" href="icons/icon-192.png" sizes="192x192">
-<link rel="apple-touch-icon" href="icons/icon-192.png">
+  /* Footer brand (screen & print) */
+  .footer{
+    position: fixed;
+    bottom: 6px;
+    right: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    opacity: .5;
+    z-index: 50;
+  }
+  .footer .footer-brand{ font-size: 12px; color: var(--muted); }
+  .footer .logo-footer{ height: 24px; }
+
+  /* Print/PDF styles */
+  @media print{
+    body{ background: #fff; color: #000; }
+    .card{ background:#fff; border-color:#ccc; }
+    header{ background:#fff !important; }
+    .sticky-bottom{ display:none !important; }
+    .wrap{ padding-bottom: 24px; }
+    .footer{ opacity:.6; bottom: 10mm; right: 12mm; }
+    body::before{
+      content: "";
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%,-50%);
+      background: url('icons/icon-512.png') no-repeat center/110mm auto;
+      width: 110mm; height: 110mm; opacity: .06; z-index: -1;
+    }
+  }
+</style>
 <script>
-// Registrar Service Worker para uso offline
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('service-worker.js');
   });
 }
 </script>
-
 </head>
 <body>
   <header>
     <div class="toolbar wrap">
-      
-<h1>
-  <img src="https://fmsegat.github.io/logo-cardiodiagnostico.png"
-       alt="Cardiodiagnóstico" style="height:32px;vertical-align:middle;margin-right:8px;">
-  Registro de Viabilidade TEER Mitral
-</h1>
-
+      <h1>
+        <img src="icons/icon-192.png" alt="Cardiodiagnóstico">
+        Registro de Viabilidade TEER Mitral
+      </h1>
       <div class="inline">
         <button class="btn" onclick="exportarJSON()">Exportar JSON</button>
         <button class="btn" onclick="copiarResumo()">Copiar resumo</button>
@@ -91,7 +117,6 @@ if ('serviceWorker' in navigator) {
 
   <main class="wrap grid cols-2">
 
-    <!-- Identificação -->
     <section class="card">
       <h2>Identificação</h2>
       <div class="row"><label>Paciente</label><input id="paciente" placeholder="Nome"/></div>
@@ -102,7 +127,6 @@ if ('serviceWorker' in navigator) {
       </div>
     </section>
 
-    <!-- Etiologia e mecanismo -->
     <section class="card">
       <h2>Etiologia e Mecanismo</h2>
       <div class="row"><label>Etiologia</label>
@@ -127,7 +151,6 @@ if ('serviceWorker' in navigator) {
       <div class="row"><label>Veias pulmonares</label><select id="pv"><option value="">—</option><option>Sistólica reversa</option><option>Sistólica diminuída</option><option>Normal</option></select></div>
     </section>
 
-    <!-- Folhetos / coaptação -->
     <section class="card">
       <h2>Folhetos & Coaptação</h2>
       <div class="row"><label>Comprimento folheto (A2/P2)</label>
@@ -157,7 +180,6 @@ if ('serviceWorker' in navigator) {
       <div class="section-note">Dicas: alvo ideal normalmente A2–P2; evitar calcificação/cleft exatamente no local de captura.</div>
     </section>
 
-    <!-- Área/Gradiente/Anel -->
     <section class="card">
       <h2>Área, Gradiente & Anel</h2>
       <div class="row"><label>Área valvar mitral</label>
@@ -182,7 +204,6 @@ if ('serviceWorker' in navigator) {
       <div class="row"><label>MAC</label><select id="mac"><option value="">—</option><option>Ausente/leve</option><option>Moderado</option><option>Extenso/severo</option></select></div>
     </section>
 
-    <!-- Câmaras e hemodinâmica -->
     <section class="card">
       <h2>Função Cardíaca & Hemodinâmica</h2>
       <div class="row"><label>VE</label>
@@ -201,7 +222,6 @@ if ('serviceWorker' in navigator) {
       <div class="row"><label>TR</label><select id="tr"><option value="">—</option><option>Trivial/leve</option><option>Moderada</option><option>Importante</option></select></div>
     </section>
 
-    <!-- Segurança / contraindicações eco -->
     <section class="card">
       <h2>Segurança (eco)</h2>
       <div class="row"><label>TE transesofágico</label><select id="tee"><option value="">—</option><option>Viável</option><option>Contraindicado relativo</option><option>Contraindicado</option></select></div>
@@ -210,7 +230,6 @@ if ('serviceWorker' in navigator) {
       <div class="row"><label>Anel/Próteses prévias</label><input id="prior" placeholder="Anel cirúrgico, clip prévio, etc."/></div>
     </section>
 
-    <!-- Classificações por item -->
     <section class="card">
       <h2>Classificação por critério (toque para marcar)</h2>
       <div class="row"><label>Zona alvo (A2–P2, jet central)</label>
@@ -278,7 +297,6 @@ if ('serviceWorker' in navigator) {
       </div>
     </section>
 
-    <!-- Observações e plano -->
     <section class="card">
       <h2>Resumo & Plano</h2>
       <div class="row"><label>Resumo textual</label><textarea id="resumo" rows="6" placeholder="Descreva os principais achados e a estratégia (ex.: 1–2 clipes, alvo A2–P2, cuidado com gradiente, etc.)"></textarea></div>
@@ -302,8 +320,12 @@ if ('serviceWorker' in navigator) {
     <div class="overall" id="overall">—</div>
   </div>
 
+  <footer class="footer">
+    <span class="footer-brand">Cardiodiagnóstico</span>
+    <img src="icons/icon-192.png" alt="Cardiodiagnóstico" class="logo-footer">
+  </footer>
+
 <script>
-// Toque para ativar chips
 for (const pill of document.querySelectorAll('.pill')){
   pill.addEventListener('click', (e)=>{
     if(!e.target.classList.contains('chip')) return;
@@ -312,7 +334,6 @@ for (const pill of document.querySelectorAll('.pill')){
     avaliarGeral();
   });
 }
-
 function lerChips(){
   const map={};
   document.querySelectorAll('.pill').forEach(p=>{
@@ -322,9 +343,7 @@ function lerChips(){
   });
   return map;
 }
-
 function autoClassFromNumbers(){
-  // Regras mínimas baseadas em thresholds de literatura
   const mva=val('mva');
   const grad=val('grad');
   const cl=val('cl');
@@ -335,42 +354,34 @@ function autoClassFromNumbers(){
   const flw=val('flailwidth');
   const calc=document.getElementById('calc').value;
   const jets=document.getElementById('multijets').value;
-
-  // MVA/Grad
   if(mva){
     setChip('mva', (mva>=4 && (!grad || grad<5)) ? 'ideal' : (mva>=3.5 && (!grad || grad<=7) ? 'desafiador' : 'desaconselhavel'));
   } else if(grad){
     setChip('mva', grad<5 ? 'ideal' : (grad<=7?'desafiador':'desaconselhavel'));
   }
-  // Coaptação
   if(cl||cd){
     const ok = (cl>=2) && (cd>0 && cd<=11);
     const borderline = (cl>=1 && cl<2) || (cd>11 && cd<=13);
     setChip('coapt', ok?'ideal':(borderline?'desafiador':'desaconselhavel'))
   }
-  // Comprimento folheto útil (usar o menor)
   if(lenA||lenP){
     const minLen = Math.min(lenA||1e9, lenP||1e9);
     if(minLen<1e9){
       setChip('len', minLen>=10?'ideal':(minLen>=7?'desafiador':'desaconselhavel'))
     }
   }
-  // Flail
   if(flgap||flw){
     const bad = (flgap>15)||(flw>20);
     const borderline = (!bad) && (flgap>10 || flw>15);
     setChip('flail', bad?'desaconselhavel':(borderline?'desafiador':'ideal'))
   }
-  // Calcificação/cleft
   if(calc){
     setChip('calc', calc==='Nenhuma'?'ideal':(calc==='Focal leve'?'desafiador':'desaconselhavel'))
   }
-  // Jets comissurais/múltiplos
   if(jets){
     setChip('jets', jets==='1'?'ideal':(jets.includes('adjacentes')?'desafiador':'desaconselhavel'))
   }
 }
-
 function setChip(key, val){
   const p=document.querySelector(`.pill[data-key="${key}"]`);
   if(!p) return;
@@ -378,12 +389,10 @@ function setChip(key, val){
     c.classList.toggle('active', c.dataset.v===val);
   }
 }
-
 function val(id){
   const v=document.getElementById(id)?.value;
   return v?Number(v):null;
 }
-
 function avaliarGeral(){
   autoClassFromNumbers();
   const chips=lerChips();
@@ -405,7 +414,6 @@ function avaliarGeral(){
   }
   overall.textContent=out;
 }
-
 function exportarJSON(){
   avaliarGeral();
   const data={
@@ -416,7 +424,8 @@ function exportarJSON(){
     mva:g('mva'), grad:g('grad'), hr:g('hr'), gradStress:g('gradStress'), hrStress:g('hrStress'), ap:g('ap'), ml:g('ml'), mac:g('mac'),
     lvef:g('lvef'), lvvol:g('lvvol'), lai:g('lai'), tapse:g('tapse'), psap:g('sPASP'), tr:g('tr'),
     tee:g('tee'), trombo:g('thrombus'), endocardite:g('endo'), previo:g('prior'),
-    classificacoes: lerChips(), dispositivo:g('device'), nImplantes:g('clips'), resumo:g('resumo'), overall: document.getElementById('overall').textContent
+    classificacoes: lerChips(), dispositivo:g('device'), nImplantes:g('clips'), resumo:g('resumo'), overall: document.getElementById('overall').textContent,
+    marca:"Cardiodiagnóstico"
   };
   const blob=new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
   const url=URL.createObjectURL(blob);
@@ -424,7 +433,6 @@ function exportarJSON(){
   a.href=url; a.download=`TEER_${(g('paciente')||'paciente').replace(/\s+/g,'_')}.json`; a.click();
   URL.revokeObjectURL(url);
 }
-
 function copiarResumo(){
   avaliarGeral();
   const txt=`TEER Mitral — ${g('paciente')||'Paciente'}\n`
@@ -437,22 +445,20 @@ function copiarResumo(){
   + `Classificação (por critério): ${JSON.stringify(lerChips())}\n`
   + `Estratégia: ${g('device')||'-'} | Implantes previstos: ${g('clips')||'-'}\n`
   + `Resumo: ${g('resumo')||'-'}\n`
-  + `Conclusão: ${document.getElementById('overall').textContent}`;
-  navigator.clipboard.writeText(txt).then(()=>{
-    toast('Resumo copiado');
-  })
+  + `Conclusão: ${document.getElementById('overall').textContent}\n`
+  + `—\nCardiodiagnóstico`;
+  navigator.clipboard.writeText(txt).then(()=>{ toast('Resumo copiado'); })
 }
-
 function g(id){ return document.getElementById(id)?.value || '' }
-
 function toast(msg){
   const t=document.createElement('div');
   t.textContent=msg; t.style.position='fixed'; t.style.bottom='80px'; t.style.left='50%'; t.style.transform='translateX(-50%)'; t.style.background='var(--card)'; t.style.border='1px solid var(--border)'; t.style.padding='10px 14px'; t.style.borderRadius='12px'; t.style.boxShadow='0 10px 30px rgba(0,0,0,.4)'; t.style.zIndex=99; document.body.appendChild(t);
   setTimeout(()=>t.remove(),1500);
 }
-
-// Prefill date
-document.getElementById('data').value = new Date().toISOString().slice(0,10);
+document.addEventListener('DOMContentLoaded',()=>{
+  const d=document.getElementById('data');
+  if(d) d.value = new Date().toISOString().slice(0,10);
+});
 </script>
 </body>
 </html>
